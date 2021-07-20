@@ -124,7 +124,7 @@
 
             public function find_user($user_email="", $user_id="")
             {
-                $pre_stmt = $this->conn->prepare("SELECT * FROM $this->table WHERE user_email = ? OR user_id = ?");
+                $pre_stmt = $this->conn->prepare("SELECT * FROM $this->table WHERE user_email = ? OR admin_id = ?");
                 $pre_stmt->bind_param("ss", $user_email,$user_id) ;
                 $result = $this->get_data($pre_stmt);
                 

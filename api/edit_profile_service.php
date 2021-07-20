@@ -13,7 +13,7 @@
         $arr = explode(" ",$header);
         $jwt = $arr[1];
         $auth = new Auth($connect);
-
+ 
         $decode = $auth->verify_jwt($jwt,SECRET_KEY);
 
         $data = json_decode(file_get_contents("php://input"));

@@ -4,7 +4,7 @@
     header('Access-Control-Allow-Methods: POST,GET');
     header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Content-Type, Access-Control-Allow-Methods, Authorization,X-Requested-With'); 
     
-    // Initialize API services
+    // Initialize API services 
     require_once("../includes/init.php");
 
     $data = json_decode(file_get_contents("php://input"));

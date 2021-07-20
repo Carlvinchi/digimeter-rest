@@ -189,6 +189,11 @@
             echo $exec;
         }
 
+        elseif(isset($_GET["borrow"])){
+            $exec = $bills->borrow($_GET["meter_id"]);
+            echo $exec;
+        }
+
           
         
     

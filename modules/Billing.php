@@ -46,7 +46,7 @@
             }
 
         }
-
+ 
         public function add_bill($meter_id, $cost_amount)
         {   
             
@@ -120,6 +120,4 @@
         }
 
         
-
-
     }
