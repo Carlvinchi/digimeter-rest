@@ -1,90 +1,42 @@
 <?php
-    header('Access-Control-Allow-Origin: *');
-    header('Content-Type: application/json');
-    header('Access-Control-Allow-Methods: POST');
-    header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Content-Type, Access-Control-Allow-Methods, Authorization,X-Requested-With'); 
+     
     
     // Initialize API services
     require_once("../includes/init.php");
 
-    $header = get_authorization_header();
-    if($header != NULL)
-    {
-        $arr = explode(" ",$header);
-        $jwt = $arr[1];
-        $auth = new Auth($connect);
-
-        $decode = $auth->verify_jwt($jwt,SECRET_KEY);
-
-        $data = json_decode(file_get_contents("php://input"));
-        
-        if(isset($decode->data) && $decode->iss == "DIGIMETER")
-        {   
-            $bills = new Billing($connect);
-            if(isset($data->readings))
+        $bills = new Billing($connect);
+            if(isset($_POST['readings']))
             {
                 $exec = $bills->add_reading(
-                $data->meter_id,
-                $data->reading,
-                $data->volume_consumed,
-                $data->cost
+                $_POST["meter_id"],
+                $_POST["reading"],
+                $_POST["volume_consumed"],
+                $_POST["cost"]
                 );
 
-                if($exec == "Success")
-                {
-                    echo json_encode(array(
-                        "message" => $exec
-                    ));
-                }
-                else
-                {
-                    echo json_encode(array(
-                        "message" => $exec
-                    ));
-                }
+                     echo $exec;
                 
-
+                
             }
 
-            elseif(isset($data->check_balance))
+            elseif(isset($_GET['check_balance']))
             {
-                $exec = $bills->get_balance($data->meter_id);
+                $exec = $bills->get_balance($_GET['meter_id']);
 
-                    echo json_encode(array(
-                        "balance" => $exec
-                    ));
+                    echo $exec[0]['meter_account'];
+            }
+
+            elseif(isset($_GET['check_borrow']))
+            {
+                $exec = $bills->check_borrowed($_GET['meter_id']);
+
+                    echo $exec;
+            }
+
+            elseif(isset($_GET['check_lock']))
+            {
+                $exec = $bills->get_lock_status($_GET['meter_id']);
+
+                    echo $exec;
             }
             
-        }
-        
-        else
-        {
-
-            echo json_encode(array(
-                "message" => "Authorization Error",
-                "data" => $decode
-                
-            ));
-        }
-
-        
-    }
-    else
-    {
-        echo json_encode(array(
-            "message" => "No authorization header"
-        ));
-    }
-
-    
-    
-        
-
-        
-
-        
-        
-    
-    
-
-    

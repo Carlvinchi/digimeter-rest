@@ -7,6 +7,18 @@
     // Initialize API services 
     require_once("../includes/init.php");
 
+    $header = get_authorization_header();
+    if($header != NULL){
+
+        $arr = explode(" ",$header);
+        $jwt = $arr[1];
+        $auth = new Auth($connect);
+ 
+        $decode = $auth->verify_jwt($jwt,SECRET_KEY);
+
+        if(isset($decode->data) && $decode->iss == "DIGIMETER"){
+
+            
     $data = json_decode(file_get_contents("php://input"));
     $bills = new Billing($connect);
     
@@ -85,4 +97,40 @@
 
             }
 
+            elseif(isset($_GET["lock"])){
+                $exec = $bills->user_lock($_GET["meter_id"]);
+                echo json_encode(array(
+                    "message" => $exec
+                ));
             
+            }
+    
+            elseif(isset($_GET["borrow"])){
+                $exec = $bills->borrow($_GET["meter_id"]);
+                echo json_encode(array(
+                    "message" => $exec
+                ));
+            }
+
+            
+        }
+
+        else
+        {
+
+            echo json_encode(array(
+                "message" => "Authorization Error",
+                "data" => $decode
+                
+            ));
+        }
+
+    }
+
+    else
+    {
+        echo json_encode(array(
+            "message" => "No authorization header"
+        ));
+    }
+

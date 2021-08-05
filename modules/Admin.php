@@ -135,6 +135,19 @@
                  
             }
 
+            public function find_all_admins($no)
+            {
+                $pre_stmt = $this->conn->prepare("SELECT * FROM $this->table ORDER BY admin_id DESC LIMIT ?,30");
+                $pre_stmt->bind_param("s", $no) ;
+                $result = $this->get_data($pre_stmt);
+                
+                if(empty($result))
+                    return [];
+                else
+                    return $result;
+                 
+            }
+ 
             public function get_data($pre_stmt) 
             {
                 $pre_stmt->execute() or die($this->conn->error); 
@@ -166,7 +179,7 @@
 
                 $hashed_password = password_hash($new_password,PASSWORD_BCRYPT, ["cost"=>15]);
                 $pre_stmt = $this->conn->prepare("UPDATE $this->table SET  
-                 `password` = ? WHERE user_id = ? ");
+                 `password` = ? WHERE admin_id = ? ");
                 $pre_stmt->bind_param("ss",$hashed_password, $user_id);
                 $result = $pre_stmt->execute() or die($this->con->error);
                 if($result)
@@ -220,4 +233,23 @@
                 }
 
             }
+
+
+            public function edit_profile_no_password($user_email,$phone_no,$first_name,$last_name,$admin_id){
+        
+                $pre_stmt = $this->conn->prepare("UPDATE $this->table SET  
+                `user_email` = ?,`phone_no` = ?,
+                 `first_name` = ?,`last_name` = ?
+                 WHERE admin_id = ?
+                ");
+                $pre_stmt->bind_param("sssss", $user_email,$phone_no,$first_name,$last_name,$admin_id);
+                $result = $pre_stmt->execute() or die($this->con->error);
+                if($result)
+                    return "Success";
+
+                else
+                    return "Error"; 
+                
+            }
     }
+ 

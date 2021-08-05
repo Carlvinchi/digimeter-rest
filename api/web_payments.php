@@ -15,7 +15,7 @@
                     $_POST["email"]
                 
                 );
-
+ 
                 if($exec == "Success")
                 
                     echo $exec;

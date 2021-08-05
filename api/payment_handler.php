@@ -10,18 +10,15 @@
     $data = json_decode(file_get_contents("php://input"));
     $payments = new Payment($connect);
     
-            if(isset($data->pay))
+             if(isset($data->pay))
             {
                 $exec = $payments->add_payment(
                     $data->meter_id,
                     $data->customer_id, 
                     $data->amount, 
-                    $amount_paid = '0.0000',
-                    $paid_status ='Pending', 
-                    $data->transaction_id, 
-                    $data->user_email, 
-                    $data->phone_no, 
-                    $data->payment_method
+                    $data->reference, 
+                    $data->user_email 
+                    
                 );
 
                 if($exec == "Success")
@@ -40,12 +37,15 @@
 
             }
 
-            elseif(isset($data->bill))
+            elseif(isset($data->update_payment))
             {
-                $exec = $bills->add_bill( 
-                $data->meter_id, 
-                $data->cost_amount
-               
+                $exec = $payments->update_payment(
+                    $data->meter_id,
+                    $data->amount_paid,
+                    $data->paid_status,
+                    $data->reference,
+                    $data->phone_no,
+                    $data->payment_method
                 );
 
                 if($exec == "Success")

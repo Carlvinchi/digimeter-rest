@@ -27,7 +27,7 @@
             $key = rand();
             $token = md5($key);
             $result = $auth->insert_data($user_email, $token, $expiry_date);
-            echo "Success";
+            echo "Success"; 
                    
                 /*
                 if($result == 1)

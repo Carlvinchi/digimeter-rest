@@ -165,8 +165,8 @@
             if($check_borrow == "YES"){
 
                 $pre_stmt = $this->conn->prepare("UPDATE $this->meter SET
-                `bal_b4` = `borrowed_bal`,  `borrowed_bal` = `borrowed_bal` + ?, `used_amount` = `used_amount` + ?, `last_updated` =? 
-                WHERE meter_id = ? AND borrowed_bal != 0");
+                `bal_b4` = `meter_account`,  `meter_account` = `meter_account` - ?, `used_amount` = `used_amount` + ?, `last_updated` =? 
+                WHERE meter_id = ?");
                 $pre_stmt->bind_param("ssss",$amount_due,$amount_due, $last_updated, $meter_id);
                 $result = $pre_stmt->execute() or die($this->conn->error);
                 if($result)
@@ -175,7 +175,7 @@
                     if($data != NULL)
                     {   $action = "Deduct";
                         $bal_b4 = $data[0]["bal_b4"];
-                        $bal_aft = $data[0]["borrowed_bal"];
+                        $bal_aft = $data[0]["meter_account"];
                         $this->add_history($meter_id,$amount_due,$bal_b4,$bal_aft,$action);
                     }
 
@@ -217,35 +217,63 @@
             $check_borrow = $this->check_borrowed($meter_id);
             if($check_borrow == "YES"){
                // $used_amount = $this->find($meter_id,$this->meter)[0]["used_amount"];
+               $borrow_bal = $this->find($meter_id,$this->meter)[0]["borrowed_bal"];
+                 if($amount + $borrow_bal > 0){
+                        $amount = $amount + $borrow_bal;
+                    $pre_stmt = $this->conn->prepare("UPDATE $this->meter SET
+                    `bal_b4` = `meter_account`, `meter_account` = `meter_account` + ?, `last_updated` = ? 
+                    WHERE meter_id = ?");
+                    $pre_stmt->bind_param("sss",$amount, $last_updated, $meter_id);
+                    $result = $pre_stmt->execute() or die($this->conn->error);
+                    if($result)
+                    {   
+
+                        $data = $this->find($meter_id,$this->meter);
+                        if($data != NULL)
+                        {   $action = "Add";
+                            $bal = $data[0]["bal_b4"];
+                            $bal_aft = $data[0]["meter_account"];
+                            $this->add_history($meter_id,$amount,$bal,$bal_aft,$action);
+
+
+                            if($bal_aft >= 0.0000)
+                                $this->off_borrowed_mode($meter_id);
+                        }
                     
-                $pre_stmt = $this->conn->prepare("UPDATE $this->meter SET
-                `bal_b4` = `meter_account`, `meter_account` = ? - `used_amount`, `last_updated` = ? 
-                WHERE meter_id = ?");
-                $pre_stmt->bind_param("sss",$amount, $last_updated, $meter_id);
-                $result = $pre_stmt->execute() or die($this->conn->error);
-                if($result)
-                {   
-
-                    $data = $this->find($meter_id,$this->meter);
-                    if($data != NULL)
-                    {   $action = "Add";
-                        $bal = $data[0]["bal_b4"];
-                        $bal_aft = $data[0]["meter_account"];
-                        $this->add_history($meter_id,$amount,$bal,$bal_aft,$action);
-
-                        // to update used borrowed balance 
-                        $used_amount = abs($bal_aft);
-                        $pre_stmt = $this->conn->prepare("UPDATE $this->meter SET
-                         `used_amount` = ? WHERE meter_id = ?");
-                        $pre_stmt->bind_param("ss",$used_amount, $meter_id);
-                        $exec = $pre_stmt->execute() or die($this->conn->error);
-
-                        if($bal_aft >= 0.0000)
-                            $this->off_borrowed_mode($meter_id);
+                        return "Success";
                     }
+                    
+
+
+                 }
+
+                 else{
+                      //$borrow_bal = $borrow_bal + $amount;
+                    $pre_stmt = $this->conn->prepare("UPDATE $this->meter SET
+                    `bal_b4` = `meter_account`, `borrowed_bal` = `borrowed_bal` + ?, `last_updated` = ? 
+                    WHERE meter_id = ?");
+                    $pre_stmt->bind_param("sss",$amount, $last_updated, $meter_id);
+                    $result = $pre_stmt->execute() or die($this->conn->error);
+                    if($result)
+                    {   
+    
+                        $data = $this->find($meter_id,$this->meter);
+                        if($data != NULL)
+                        {   $action = "Add";
+                            $bal = $data[0]["bal_b4"];
+                            $bal_aft = $data[0]["meter_account"];
+                            $this->add_history($meter_id,$amount,$bal,$bal_aft,$action);
+    
+    
+                            
+                        }
+                    
+                        return "Success";
+                    }
+                 }
+               
+
                 
-                    return "Success";
-                }
                 
             }
 
@@ -384,7 +412,7 @@
                     return $result;
                  
         }
-
+ 
         public function fetch_readings($meter_id,$table,$no)
         {
                 $pre_stmt = $this->conn->prepare("SELECT * FROM $table WHERE meter_id = ? ORDER BY entry_id DESC LIMIT ?,30");
@@ -522,7 +550,17 @@
             $result = $this->find($meter_id,$this->meter);
             return $result;
         }
- 
+
+        
+        public function get_lock_status($meter_id){
+            $result = $this->find($meter_id,$this->meter);
+            
+            $status = $result[0]['lock_status'] ;
+            return $status;
+        }
+        
+        
+
 
         public function delete($meter_id,$table){
             $pre_stmt = $this->conn->prepare("DELETE FROM $table WHERE meter_id = ? ");
@@ -545,7 +583,7 @@
                 return "Error";
 
         } 
-
+ 
         public function check_borrowed($meter_id)
         {
             $borrowed = $this->find($meter_id,"meter")[0]['borrowed'];
@@ -563,7 +601,7 @@
                 $result = $pre_stmt->execute() or die($this->conn->error);
                 return "Success";
         }
-
+ 
         public function borrow($meter_id)
         {   
            $check_mode = $this->check_borrowed($meter_id);
@@ -580,7 +618,7 @@
                 if(empty($result))
                     return "You can't borrow";
                 else{
-                       $amount =  - $result[0]["cost"]/4;
+                       $amount =   -$result[0]["cost"]/4;
                        $real_amount = abs($amount);
 
                        $last_updated = $this->create_time();

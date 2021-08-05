@@ -31,29 +31,13 @@
                                     <button type="button" class="btn btn-warning" onclick="lock(<?php echo $item['meter_id']?>)">Change</button> 
                                     </td>
                                     <td>
-                                    <div>
-                                    
-                                    
-                                
-                                        <li class="nav-item dropdown d-none d-lg-block">
-                                            <button class="nav-link btn btn-success" id="createbuttonDropdown" data-toggle="dropdown" aria-expanded="false">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="createbuttonDropdown">
-                                            <h6 class="p-3 mb-0">
-                                            <a type="button" class="btn btn-primary" href="http://localhost/digifront/in/metfo.php?meter_id=<?php echo $item['meter_id']?>&customer_id=<?php echo $item['customer_id']?>">View Details</a>
-                                            </h6>
-                                            <h6 class="p-3 mb-0">
-                                            <button type="button" class="btn btn-warning" onclick="get_meter(<?php echo $item['customer_id']?>,<?php echo $item['meter_id']?>)">Update</button>
-                                             </h6>
-                                            <h6 class="p-3 mb-0">
-                                            <button type="button" class="btn btn-danger" onclick="confirm_delete(<?php echo $item['meter_id']?>)">Delete</button>
-                                            
-                                            </h6>
-                                            
-                                            </div>
-                                        </li>
-                                    
-                                    
-                                    </div>
+                                    <a type="button" class="btn btn-primary" href="http://localhost/digifront/in/metfo.php?meter_id=<?php echo $item['meter_id']?>&customer_id=<?php echo $item['customer_id']?>">View Details</a>
+                                    </td>
+                                    <td>
+                                      <button type="button" class="btn btn-warning" onclick="get_meter(<?php echo $item['customer_id']?>,<?php echo $item['meter_id']?>)">Update</button>
+                                    </td>  
+                                    <td>
+                                    <button type="button" class="btn btn-danger" onclick="confirm_delete(<?php echo $item['meter_id']?>)">Delete</button>
                                     </td>
                             </tr>
                         <?php
@@ -193,6 +177,54 @@
             $exec = $bills->borrow($_GET["meter_id"]);
             echo $exec;
         }
+
+        elseif(isset($_GET['get_readings']))
+    {
+        $result = $bills->fetch_readings($_GET['m_id'], 'meter_readings', $_GET['no']);
+        if(!empty($result))
+        {
+    
+        
+                    foreach($result as $item){
+                    
+                        ?>
+        
+                                <tr>
+                                    <td> <?php echo $item['meter_id'] ?> </td>
+                                    <td> <?php echo $item['volume_consumed'] ?> </td>
+                                    
+                                    <td> <?php echo $item['cost'] ?> </td>
+                                    <td> <?php echo $item['entry_time'] ?> </td>     
+                            </tr>
+                        <?php
+        
+        
+                    }
+         
+                    
+        }
+        else
+            echo 0;
+            
+
+    }
+
+    elseif(isset($_GET["pay_sum"])){
+        $exec = $bills->borrow($_GET["meter_id"]);
+        echo $exec;
+    }
+
+    elseif(isset($_GET['get_all_readings']))
+    {
+        $result = $bills->get_readings($_GET["meter_id"]);
+        if(empty($result))
+            echo 0;
+        else{
+            echo json_encode($result);
+        }
+        
+        
+    }
 
           
         

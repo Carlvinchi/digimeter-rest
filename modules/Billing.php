@@ -48,7 +48,7 @@
         }
  
         public function add_bill($meter_id, $cost_amount)
-        {   
+        {    
             
             $paid_status = $this->deduct_cost_of_water($meter_id, $cost_amount);
             $entry_time = $this->create_time();

@@ -153,10 +153,10 @@
             payments.paid_status,payments.transaction_id,payments.phone_no,payments.payment_method,
             payments.entry_time FROM meter_alias LEFT JOIN payments on 
             payments.meter_id = meter_alias.meter_id 
-            WHERE meter_alias.customer_id = ? AND meter_alias.meter_id = ? ORDER BY payment_id DESC LIMIT ?,30"
+            WHERE meter_alias.customer_id = ? AND meter_alias.meter_id = ? AND payments.customer_id = ? ORDER BY payment_id DESC LIMIT ?,30"
         
         );
-                $pre_stmt->bind_param("sss", $customer_id,$meter_id,$no);
+                $pre_stmt->bind_param("ssss", $customer_id,$meter_id, $customer_id, $no);
                 $result = $this->get_data($pre_stmt);
                 
                 if(empty($result))

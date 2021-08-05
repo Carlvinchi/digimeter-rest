@@ -2,6 +2,7 @@
     // Initialize API services
     require_once("../includes/init.php");
 
+    $admin = new Admin($connect);
     $user = new User($connect);
     $bills = new Billing($connect);
     $pay = new Payment($connect);
@@ -369,7 +370,7 @@
             echo 0;
             
 
-    }
+    } 
 
     elseif(isset($_POST["add-money"])){
         $exec = $pay->add_payment_direct(
@@ -396,5 +397,124 @@
 
     }
 
+    elseif(isset($_POST["create-admin"])){
+        $exec = $admin->create_user(
+            $_POST["admin-email"],
+            $_POST["admin-mobile"], 
+            $_POST["admin-firstName"], 
+            $_POST["admin-lastName"], 
+            $_POST["admin-pass"]
+        );
+        
+        echo $exec;
+    }
+
+    elseif(isset($_GET['admin-list']))
+    {
+        $result = $admin->find_all_admins($_GET["no"]);
+        if(!empty($result))
+        {
+    
+        
+                    foreach($result as $item){
+                    
+                        ?>
+        
+                                <tr>
+                                    <td> <?php echo $item['user_email'] ?> </td>
+                                    <td> <?php echo $item['first_name'] ?> </td>
+                                    
+                                    <td> <?php echo $item['last_name'] ?> </td>
+                                    <td> <?php echo $item['phone_no'] ?> </td>     
+                            </tr>
+                        <?php
+        
+        
+                    }
+         
+                    
+        }
+        else
+            echo 0;
+            
+
+    }
+    
+    elseif(isset($_GET["admin-profile"])){
+        $data = $admin->find_user("",$_GET['user_id']);
+
+        if(is_array($data)){
+    
+            foreach($data as $item){
+                
+                ?>
+    
+                            <div class="form-group row" >
+                                <label for="exampleInputName" class="col-sm-3 col-form-label"> Email</label>
+                                <div class="col-sm-9">
+                                <input type="email" class="form-control" name="user_email" id="user_email" value="<?php echo $item['user_email']?>" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="exampleInputMeterID" class="col-sm-3 col-form-label">Mobile No</label>
+                                <div class="col-sm-9">
+                                <input type="text" class="form-control" name="phone_no" id="phone_no" value="<?php echo $item['phone_no']?>" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="exampleInputCustomerID" class="col-sm-3 col-form-label">First Name</label>
+                                <div class="col-sm-9">
+                                <input type="text" class="form-control" name="first_name" id="first_name" value="<?php echo $item['first_name']?>" required>
+                                </div>
+                            </div>
+    
+                            <div class="form-group row">
+                                <label for="exampleInputCustomerID" class="col-sm-3 col-form-label">Last Name</label>
+                                <div class="col-sm-9">
+                                <input type="text" class="form-control" name="last_name" id="last_name" value="<?php echo $item['last_name']?>" required>
+                                <input type="hidden" class="form-control" id="user" name="user" value="<?php echo $_SESSION['admin_id']?>">
+                                <input type="hidden" class="form-control" id="admin_change_profile" name="admin_change_profile" value="1">
+                            </div>
+                            </div>
+    
+                            <br>
+                            <div>
+                                <center>
+                            &emsp; &emsp;   
+                            <input type="submit" value="Submit" class="btn btn-primary mr-2" />
+                    
+                                </center>
+                            </div>
+                            
+                <?php
+    
+    
+            }
+    
+            
+        }
+
+    }
+
+    elseif(isset($_POST["admin_change_profile"])){
+        $exec = $admin->edit_profile_no_password(
+            $_POST["user_email"],
+            $_POST["phone_no"],
+            $_POST["first_name"],
+            $_POST["last_name"],
+            $_POST["user"]
+            );
+        echo $exec; 
+    }
+
+    elseif(isset($_POST["a_change_p"])){
+        $exec = $admin->change_password(
+            $_POST["old_pass"],
+            $_POST["new_pass1"],
+            $_POST["us_id"]
+            );
+
+        echo $exec; 
+    }
 
    

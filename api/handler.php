@@ -228,6 +228,19 @@
                 
 
             }
+
+            elseif(isset($_GET['delete_alias']))
+            {
+                $exec = $bills->delete_alias($_GET["meter_id"],$_GET["customer_id"]);
+
+                    echo json_encode(array(
+                        "message" => $exec
+                    ));
+                
+                
+                
+
+            }
         }
 
         else
